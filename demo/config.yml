@@ -1,0 +1,28 @@
+# Use this file to customize your demo.
+# Write computer specific settings in config.local.yml, which won't be versioned.
+# 2589 - 869 = 1720
+demo:
+  audio-synthesizer:
+    tool: realtime
+  name: PiaggioNonTroppo
+  gl:
+    constants:
+      - GL_ARRAY_BUFFER
+      - GL_COLOR_ATTACHMENT0
+      - GL_FRAMEBUFFER
+      - GL_RGBA32F
+      - GL_TEXTURE0
+    functions:
+      - glActiveTexture
+      - glBindBuffer
+      - glBindFramebuffer
+      - glBindVertexArray
+      - glCreateBuffers
+      - glCreateVertexArrays
+      - glEnableVertexAttribArray
+      - glFramebufferTexture2D
+      - glGenFramebuffers
+      - glNamedBufferStorage
+      - glNamedBufferSubData
+      - glUniform1i
+      - glVertexAttribPointer
