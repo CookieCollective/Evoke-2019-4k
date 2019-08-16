@@ -1,0 +1,69 @@
+[[90m23:36:51[39m] Requiring external module ts-node/register
+[[90m23:36:53[39m] Using gulpfile D:\Projects\Evoke-2019-4k\gulpfile.ts
+[[90m23:36:53[39m] Starting 'dev'...
+Replacing references to constant "resolutionWidth" by its value "800".
+Replacing references to constant "resolutionHeight" by its value "600".
+Global variable "resolutionWidth" is not referenced and won't be used.
+Global variable "resolutionHeight" is not referenced and won't be used.
+Replacing references to constant "PI" by its value "3.14".
+Global variable "_gl_Position" is not referenced and won't be used.
+Executing D:\\Shaders\\SDK\\shader_minifier.exe --field-names rgba --format none -o build\shader.min.glsl -v -- build\shader.glsl
+Shader Minifier 
+1.1.5, Dec 2017 - https://github.com/laurentlb
+/Shader_Minifier
+
+
+
+Input file size is: 
+4753
+
+File parsed. 
+Shader size is: 3358
+
+Rewrite tricks applied. 
+Shader size is: 3258
+
+62 identifiers renamed. 
+Shader si
+ze is: 2358
+Minification of 'build\shader.glsl' finished.
+
+Executing cl /EHsc /ID:\Shaders\SDK\glew-2.1.0\include /FA /Fabuild\main.obj.asm /c /Fobuild\main.obj build\main.cpp
+Executing cl /EHsc /ID:\Shaders\SDK\glew-2.1.0\include /FA /Fabuild\debug.obj.asm /c /Fobuild\debug.obj engine\debug.cpp
+Executing cl /EHsc /ID:\Shaders\SDK\glew-2.1.0\include /FA /Fabuild\server.obj.asm /c /Fobuild\server.obj engine\server.cpp
+main.cpp
+
+debug.cpp
+
+server.cpp
+
+Executing link httpapi.lib /SUBSYSTEM:CONSOLE /MACHINE:X86 winmm.lib gdi32.lib opengl32.lib kernel32.lib user32.lib D:\Shaders\SDK\glew-2.1.0\lib\Release\Win32\glew32s.lib /OUT:dist\PiaggioNonTroppo.exe build\main.obj build\debug.obj build\server.obj
+Microsoft (R) Incremental Linker Version 14.13.26129.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Build successful.
+Build duration: 1.6 seconds.
+Demo size: 468992 bytes.
+Executing D:\Projects\Evoke-2019-4k\dist\PiaggioNonTroppo.exe 
+OpenGL version: 4.5.0 - Build 22.20.16.4749
+
+
+Uniform locations in pass 0:
+float: 0
+sampler2D: -1
+
+
+Uniform locations in pass 1:
+float: 0
+sampler2D: -1
+
+
+Uniform locations in pass 2:
+float: 0
+sampler2D: 1
+
+
+Server listening on localhost:3000.
+
+[[90m23:37:28[39m] Finished 'dev' after 35 s
