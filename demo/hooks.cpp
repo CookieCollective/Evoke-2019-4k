@@ -147,20 +147,11 @@ checkGLError();
 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureIds[0], 0);
 checkGLError();
 
-// Pass 1 particles
-glUseProgram(programs[1]);
-checkGLError();
-glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 checkGLError();
+glDepthMask(GL_TRUE);
 checkGLError();
-glEnable(GL_BLEND);
-checkGLError();
-glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-checkGLError();
-glBindVertexArray(vaoParticles);
-checkGLError();
-glDrawElements(GL_TRIANGLE_STRIP, indiceParticleCount, GL_UNSIGNED_INT, indicesParticles);
+glEnable(GL_DEPTH_TEST);
 checkGLError();
 
 // Pass 0 ribbons
@@ -168,9 +159,27 @@ glUseProgram(programs[0]);
 checkGLError();
 glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
 checkGLError();
+glDisable(GL_CULL_FACE);
+checkGLError();
 glBindVertexArray(vao);
 checkGLError();
 glDrawElements(GL_TRIANGLE_STRIP, indiceCount, GL_UNSIGNED_INT, indices);
+checkGLError();
+
+// Pass 1 particles
+glUseProgram(programs[1]);
+checkGLError();
+glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
+checkGLError();
+// glEnable(GL_BLEND);
+// checkGLError();
+// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+// checkGLError();
+glEnable(GL_CULL_FACE);
+checkGLError();
+glBindVertexArray(vaoParticles);
+checkGLError();
+glDrawElements(GL_TRIANGLE_STRIP, indiceParticleCount, GL_UNSIGNED_INT, indicesParticles);
 checkGLError();
 
 // Pass 2
@@ -180,6 +189,8 @@ glUseProgram(programs[2]);
 checkGLError();
 glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
 checkGLError();
+glDisable(GL_CULL_FACE);
+glDisable(GL_DEPTH_TEST);
 glActiveTexture(GL_TEXTURE0 + 0);
 checkGLError();
 glBindTexture(GL_TEXTURE_2D, textureIds[0]);
