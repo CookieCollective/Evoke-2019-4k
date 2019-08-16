@@ -1,7 +1,7 @@
 #pragma hook declarations
 
 #pragma data_seg(".var")
-static GLuint vbo, vao;
+static GLuint vbo, vao, vboParticles, vaoParticles;
 
 static const constexpr int count = 100;
 static const constexpr int sliceX = 100;
@@ -10,9 +10,13 @@ static const constexpr int faceX = sliceX + 1;
 static const constexpr int faceY = sliceY + 1;
 static const constexpr int indiceCount = count * ((faceX + 2) * faceY);		// count * line (+2 obfuscated triangle) * row
 static const constexpr int vertexCount = count * (faceX * faceY) * (3 + 2); // count * line * row * (x,y,z + u,v)
+static const constexpr int particleCount = 64*64;
+static const constexpr int indiceParticleCount = particleCount * 4 * 6;
 
 static GLfloat vertices[vertexCount];
+static GLfloat verticesParticles[particleCount*6*4];
 static int indices[indiceCount];
+static int indicesParticles[indiceParticleCount];
 
 static const constexpr int textureCount = 1;
 static GLuint textureIds[textureCount];
@@ -21,6 +25,7 @@ static unsigned int fbo;
 
 #pragma hook initialize
 
+// ribbons
 int i = 0;
 for (int index = 0; index < count; ++index)
 {
@@ -49,24 +54,65 @@ for (int index = 0; index < count; ++index)
 	}
 }
 
+// particles
+i = 0;
+for (int index = 0; index < particleCount; ++index) {
+	int xx = 0;
+	for (int y = 0; y < 2; ++y) {
+		for (int x = 0; x < 2; ++x) {
+			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 0] = (float)index;
+			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 1] = (float)index;
+			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 2] = (float)index;
+			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 3 + 0] = ((float)x) * 2.f - 1.f;
+			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 3 + 1] = ((float)y) * 2.f - 1.f;
+			xx++;
+		}
+	}
+	for (int r = 0; r < 2 - 1; ++r) {
+		indicesParticles[i++] = index * (2 * 2) + r * 2;
+		for (int c = 0; c < 2; ++c) {
+			indicesParticles[i++] = index * (2 * 2) + r * 2 + c;
+			indicesParticles[i++] = index * (2 * 2) + (r + 1) * 2 + c;
+		}
+		indicesParticles[i++] = index * (2 * 2) + (r + 1) * 2 + (2 - 1);
+	}
+}
+
+// ribbons
 glCreateBuffers(1, &vbo);
 checkGLError();
-
 glNamedBufferStorage(vbo, sizeof(vertices), vertices, 0);
 checkGLError();
 glCreateVertexArrays(1, &vao);
 checkGLError();
 glBindVertexArray(vao);
 checkGLError();
-
 glBindBuffer(GL_ARRAY_BUFFER, vbo);
 checkGLError();
-
 glEnableVertexAttribArray(0);
 checkGLError();
 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
 checkGLError();
+glEnableVertexAttribArray(1);
+checkGLError();
+glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+checkGLError();
 
+// particles
+glCreateBuffers(1, &vboParticles);
+checkGLError();
+glNamedBufferStorage(vboParticles, sizeof(verticesParticles), verticesParticles, 0);
+checkGLError();
+glCreateVertexArrays(1, &vaoParticles);
+checkGLError();
+glBindVertexArray(vaoParticles);
+checkGLError();
+glBindBuffer(GL_ARRAY_BUFFER, vboParticles);
+checkGLError();
+glEnableVertexAttribArray(0);
+checkGLError();
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+checkGLError();
 glEnableVertexAttribArray(1);
 checkGLError();
 glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
@@ -74,7 +120,6 @@ checkGLError();
 
 glGenTextures(textureCount, textureIds);
 checkGLError();
-
 for (i = 0; i < textureCount; i++)
 {
 	glBindTexture(GL_TEXTURE_2D, textureIds[i]);
@@ -102,46 +147,49 @@ checkGLError();
 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureIds[0], 0);
 checkGLError();
 
-glUseProgram(programs[0]);
+// Pass 1 particles
+glUseProgram(programs[1]);
 checkGLError();
-
 glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
 checkGLError();
-
-glClear(GL_COLOR_BUFFER_BIT); // | GL_DEPTH_BUFFER_BIT);
+glBindVertexArray(vaoParticles);
+checkGLError();
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+checkGLError();
+glDrawElements(GL_TRIANGLE_STRIP, indiceParticleCount, GL_UNSIGNED_INT, indicesParticles);
 checkGLError();
 
+// Pass 0 ribbons
+glUseProgram(programs[0]);
+checkGLError();
+glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
+checkGLError();
 glEnable(GL_BLEND);
 checkGLError();
-
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 checkGLError();
-
 glBindVertexArray(vao);
 checkGLError();
-
 glDrawElements(GL_TRIANGLE_STRIP, indiceCount, GL_UNSIGNED_INT, indices);
 checkGLError();
 
-// Pass 1
-
+// Pass 2
 glBindFramebuffer(GL_FRAMEBUFFER, 0);
+glDisable(GL_CULL_FACE);
+glDepthMask(GL_FALSE);
+glDisable(GL_DEPTH_TEST);
 checkGLError();
-
-glUseProgram(programs[1]);
+glUseProgram(programs[2]);
 checkGLError();
-
 glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
 checkGLError();
-
 glActiveTexture(GL_TEXTURE0 + 0);
 checkGLError();
-
 glBindTexture(GL_TEXTURE_2D, textureIds[0]);
 checkGLError();
-
 glUniform1i(3, 0);
 checkGLError();
-
+glClear(GL_COLOR_BUFFER_BIT);
+checkGLError();
 glRects(-1, -1, 1, 1);
 checkGLError();
