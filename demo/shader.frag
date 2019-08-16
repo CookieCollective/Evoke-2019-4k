@@ -29,6 +29,7 @@ vec4 color;
 
 // TODO move
 const float TAU = 6.28;
+float beat = time * 2.08333;// BPS
 
 float md(float p, float m) {
 	return mod(p - m*0.5, m) - m*0.5;
@@ -44,6 +45,10 @@ void amodm(inout vec2 p, float d) {
 	p = vec2(cos(a), sin(a)) * length(p);
 }
 
+vec3 palette(vec3 a, vec3 b, vec3 c, vec3 d, float t) {
+	return a + b * cos(TAU * (c * t + d));
+}
+
 mat2 rot(float a) {
 	float c = cos(a), s = sin(a);
 	return mat2(c, - s, s, c);
@@ -55,7 +60,7 @@ vec3 curve(float ratio) {
 	position.xz *= rot(ratio);
 	position.yz *= rot(ratio * 0.58);
 	position.yx *= rot(ratio * 1.5);
-	position.x /= 800./600.;
+	position.x /= resolutionWidth/resolutionHeight;
 	return position;
 }
 
@@ -69,15 +74,18 @@ void mainV0() {
 	vec3 next = curve(ratio + 0.01);
 	vec2 y = normalize(next.xy - position.xy);
 	vec2 x = vec2(y.y, - y.x);
-	position.xy += x * aUV.y * (0.01 + 0.01 * position.z);
-	gl_Position = vec4(position.xy, 0.0, 1.0);
+	// position.z = abs(position.z);
+	position.xy += x * aUV.y * .01;// * (0.01 + 0.01 * position.z);
+	position.xy /= (1.-(position.z));
+	gl_Position = vec4(position, 1.0);
 	vColor = vec3(aUV.xy * 0.5 + 0.5, 0);
 }
 #pragma fragment 0
 void mainF0() {
-	float fade = smoothstep(0.0, 0.5, vColor.x);
-	fade *= (1.0 - abs(vColor.x * 2.0 - 1.0));
-	color = vec4(1, 1, 1, fade);
+	// float fade = smoothstep(0.0, 0.5, vColor.x);
+	// fade *= (1.0 - abs(vColor.x * 2.0 - 1.0));
+	color = vec4(vColor,1.);
+	// color = vec4(palette(vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.0, 1.0, 2.0) / 3.0, floor(beat / 8.0) * 0.1), 1.);
 }
 
 // PARTICLES
@@ -91,20 +99,20 @@ void mainV1() {
 	position.xyz = vec3(-10,-10,0);
 	float size = .02;
 
-	float shouldSplash = 1.0;
+	float shouldSplash = 0.0;
 	if (shouldSplash > 0.5) {
 		angle += sin(angle *4987.54687);
-		float t = time+sin(angle*1357.57);
+		float t = time*.1+sin(angle*1357.57);
 		float splashT = fract(t);
 		float radius = .5 + .9 * sin(angle*6873.2467);
-		size = .2+ .1 * sin(angle*927.6871);
-		size *= smoothstep(.0, .1, splashT) * smoothstep(1.,.9,splashT);
+		size = .1;//+ .01 * sin(angle*927.6871);
+		// size *= smoothstep(.0, .1, splashT) * smoothstep(1.,.9,splashT);
 		float a2 = sin(floor(t) * 1654.546 + angle * 554.4687) * 10.5465;
 		vec2 offset = vec2(cos(a2),sin(a2))*.5;
 		vec2 splash = splashT * vec2(cos(angle), sin(angle)) * radius + offset;
 		splash.y += (sin(splashT*3.1415) - splashT)*.5;
 		position.xy = splash;
-		position.z = abs(sin(angle*8735.5798))*4.;
+		position.z = abs(sin(angle*8735.5798));
 	}
 
 	float shouldSpace = 0.0;
@@ -126,37 +134,39 @@ void mainV1() {
 		}
 	}
 
-	float shouldTerrain = 0.0;
+	float shouldTerrain = 1.0;
 	if (shouldTerrain > 0.5) {
-		size = .3+.2*sin(id*13574.5468);
+		size = .03;//+.02*sin(id*13574.5468);
 		position.x = (mod(id,64.)/64.)*2.-1.;
 		position.z = (floor(id/64.)/64.)*2.-1.;
-		position.y = sin(length(position.xz)*8.-time*PI)*.2;
-		// position.yz *= rot(-PI/2.);
+		position.y = -.5+sin(length(position.xz)*8.-time*PI)*.2;
+		// position.yz *= rot(time);
 		float a = sin(id*8673.468)*PI*2.;
 		float r = .5*sin(id*15.578);
-		position.xz += vec2(sin(a),cos(a))*r;
+		// position.xz += vec2(sin(a),cos(a))*r;
 		float lod = length(position)*8.;
 		// position = floor(position*lod)/lod;
 		// po
-		position.z += 1.;
+		position.z = (position.z+1.)/2.;
 		position.x += .1;
 		// position.xz *= 2.;
 	}
 
+	position.z = abs(position.z);
 	position.xy += size * aUV.xy;// / (1.+abs(position.z));
-	position.xy /= (1.+(position.z));
+	position.xy /= (1.-(position.z));
 	position.x /= 800./600.;
-	gl_Position = vec4(position.xy, 0.0, 1.0);
+	gl_Position = vec4(position, 1.0);
 	vColor = vec3(aUV.xy * 0.5 + 0.5, 0);
 	vUV = aUV;
 }
 #pragma fragment 1
 void mainF1() {
 	float d =  length(vUV);
-	float alpha = smoothstep(1., .5, d);
-	alpha = (1-d)*(.05/d);
-	color = vec4(1,1,1,clamp(alpha,0.,1.));
+	if (d > 1.) discard;
+	// float alpha = smoothstep(1., .5, d);
+	// alpha = (1-d)*(.05/d);
+	color = vec4(vColor,1);//clamp(alpha,0.,1.));
 }
 
 // POST FX
@@ -165,17 +175,36 @@ void mainF2() {
 	float aspectRatio = resolutionWidth / resolutionHeight;
 	float beat = time * 2.08333;// BPS
 	
-	// A mod kaleidoscope.
 	vec2 uvc = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight) - 0.5;
 	uvc.x *= aspectRatio;
 	
+	vec2 st = uvc * 40.0, fst = fract(st), ist = floor(st);
+	vec2 wp = ist + step(0.5, fst), bp = ist + vec2(0.5);
+	float wl = length(st - wp), bl = length(st - bp);
+	float halftone = step(sin(beat * TAU / 4.0) * 0.45, bl / (bl + wl) - 0.5);
+	
+	// A mod kaleidoscope.
+	#if 0
 	amodm(uvc, floor(fract(sin(floor(beat / 4.0)) * 1e3) * 5.0) + 1.0);
+	#endif
 	vec2 uv = uvc / vec2(aspectRatio, 1) + 0.5;
 	
 	// Chromatic aberration.
+	#if 0
 	for(int i = 0; i < 3; ++ i)
 	{
 		color[i] = texture(firstPassTexture, (uv - 0.5) * (1.0 + exp(-fract(beat / 4.0)) * (0.01 + float(i) * 0.01)) + 0.5)[i];
 	}
+	color.a = texture(firstPassTexture, uv).a;
+	
+	#else
+	color = texture(firstPassTexture, uv);
+	#endif
+	
+	// Halftone.
+	#if 0
+	color = mix(color, 1.0 - color, halftone);
+	#endif
+	
 	color.a = 1.0;
 }
