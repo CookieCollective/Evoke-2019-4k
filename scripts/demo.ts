@@ -22,13 +22,13 @@ export async function provideDemo(context: IContext): Promise<IDemoDefinition> {
 			variables,
 			'float',
 			'resolutionWidth',
-			config.get('capture:width')
+			config.get('capture:width').toFixed(1)
 		);
 		addConstant(
 			variables,
 			'float',
 			'resolutionHeight',
-			config.get('capture:height')
+			config.get('capture:height').toFixed(1)
 		);
 	} else {
 		if (
@@ -39,13 +39,13 @@ export async function provideDemo(context: IContext): Promise<IDemoDefinition> {
 				variables,
 				'float',
 				'resolutionWidth',
-				config.get('demo:resolution:width')
+				config.get('demo:resolution:width').toFixed(1)
 			);
 			addConstant(
 				variables,
 				'float',
 				'resolutionHeight',
-				config.get('demo:resolution:height')
+				config.get('demo:resolution:height').toFixed(1)
 			);
 		}
 	}
