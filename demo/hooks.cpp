@@ -140,7 +140,7 @@ checkGLError();
 glBindTexture(GL_TEXTURE_2D, textureIds[0]);
 checkGLError();
 
-glUniform1i(3, 0);
+glUniform1i(1, 0);
 checkGLError();
 
 glRects(-1, -1, 1, 1);
