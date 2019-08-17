@@ -63,7 +63,7 @@ vec3 curve(float ratio) {
 	ratio += time;
 	vec3 position = vec3(0.5 + 0.3 * sin(ratio), 0, 0);
 	position.xz *= rot(ratio);
-	position.yz *= rot(ratio * 1.58);
+	position.yz *= rot(ratio * 4.58);
 	position.yx *= rot(ratio * 1.5);
 	position.xz *= rot(time * .1);
 	position.x /= resolutionWidth/resolutionHeight;
@@ -135,10 +135,12 @@ void mainF2() {
 	vec2 uvc = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight) - 0.5;
 	uvc.x *= aspectRatio;
 	
-	vec2 st = uvc * 40.0, fst = fract(st), ist = floor(st);
+	vec2 st = uvc * 100.0;
+	st *= rot(PI/10.);
+	vec2 fst = fract(st), ist = floor(st);
 	vec2 wp = ist + step(0.5, fst), bp = ist + vec2(0.5);
 	float wl = length(st - wp), bl = length(st - bp);
-	float halftone = step(sin(beat * TAU / 4.0) * 0.45, bl / (bl + wl) - 0.5);
+	float halftone = step(.1, bl / (bl + wl) - 0.5);
 	
 	// A mod kaleidoscope.
 	#if 0
@@ -157,18 +159,28 @@ void mainF2() {
 	#else
 	color = texture(firstPassTexture, uv);
 	#endif
+
+	float lod = 4.0;
+	color = 1.-colorize()*floor((uv.x+uv.y)*lod)/lod;
 	
 	// Halftone.
 	#if 0
-	color = mix(color, 1.0 - color, halftone);
+	// color = mix(color, 1.0 - color, halftone);
+	color *= halftone;
 	#endif
 
 	// outline
 	#if 1
-	color = .5*texture(firstPassTexture, uv+vec2(0.01));
-	vec4 frame = texture(firstPassTexture, uv);
-	float gray = (frame.r+frame.g+frame.b)/3.0;
-	color = mix(color, frame, step(0.1, gray));
+	// color = vec4(0);
+	// for (float index = 1.0; index <= 3.0; ++index) {
+	// 	float ratio = index/3.0;
+		// color = ratio*texture(firstPassTexture, uv+vec2(0.01)*ratio);
+		// float a = ratio * TAU;
+		// vec2 offset = vec2(cos(a),sin(a)) * 0.1 * (1.-ratio);
+		vec4 frame = texture(firstPassTexture, uv+vec2(0.01));
+		float gray = (frame.r+frame.g+frame.b)/3.0;
+		color = mix(0.5*color, frame, step(0.1, gray));
+	// }
 	#endif
 	
 	color.a = 1.0;
