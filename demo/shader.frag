@@ -70,6 +70,12 @@ vec3 curve(float ratio) {
 	return position;
 }
 
+float halftone(vec2 st, float dir) {
+	vec2 fst = fract(st), ist = floor(st), wp = ist + step(0.5, fst), bp = ist + vec2(0.5);
+	float wl = length(st - wp), bl = length(st - bp);
+	return step(dir, bl / (bl + wl));
+}
+
 // RIBBONS
 
 #pragma vertex 0
@@ -135,12 +141,7 @@ void mainF2() {
 	vec2 uvc = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight) - 0.5;
 	uvc.x *= aspectRatio;
 	
-	vec2 st = uvc * 100.0;
-	st *= rot(PI / 10.0);
-	vec2 fst = fract(st), ist = floor(st);
-	vec2 wp = ist + step(0.5, fst), bp = ist + vec2(0.5);
-	float wl = length(st - wp), bl = length(st - bp);
-	float halftone = step(0.1, bl / (bl + wl) - 0.5);
+	float ht = halftone(uvc * 100.0 * rot(PI / 10.0), 0.1);
 	
 	// A mod kaleidoscope.
 	#if 0
@@ -161,12 +162,13 @@ void mainF2() {
 	#endif
 	
 	float lod = 4.0;
-	color = 1.0 - colorize() * floor((uv.x + uv.y) * lod) / lod;
+	vec4 bgc = colorize();
+	color = mix(bgc, 1.0 - bgc, halftone(uvc * 40.0 * rot(beat / 120.0), floor((uv.x + uv.y) * lod) / lod / 2.0));
 	
 	// Halftone.
 	#if 0
-	// color = mix(color, 1.0 - color, halftone);
-	color *= halftone;
+	// color = mix(color, 1.0 - color, ht);
+	color *= ht;
 	#endif
 	
 	// outline
