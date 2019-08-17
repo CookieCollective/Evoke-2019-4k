@@ -43,16 +43,28 @@ export async function writeDemoData(context: IContext, demo: IDemoDefinition) {
 		fileContents.push(
 			`#define ${nameMacro} "${uniformArray.minifiedName ||
 				uniformArray.name}"`,
-			`#define ${countMacro} ${uniformArray.variables.length}`,
-			`static ${cppType} ${arrayName}[${countMacro}];`
+			`#define ${countMacro} ${uniformArray.variables.length}`
 		);
 
-		uniformArray.variables.forEach((variable, index) => {
-			const name = variable.name
-				.replace(/^\w|\b\w/g, (letter) => letter.toUpperCase())
-				.replace(/_+/g, '');
-			fileContents.push(`#define uniform${name} ${arrayName}[${index}]`);
-		});
+		if (uniformArray.variables.length === 1) {
+			fileContents.push(`static ${cppType} ${arrayName};`);
+
+			uniformArray.variables.forEach((variable) => {
+				const name = variable.name
+					.replace(/^\w|\b\w/g, (letter) => letter.toUpperCase())
+					.replace(/_+/g, '');
+				fileContents.push(`#define uniform${name} ${arrayName}`);
+			});
+		} else {
+			fileContents.push(`static ${cppType} ${arrayName}[${countMacro}];`);
+
+			uniformArray.variables.forEach((variable, index) => {
+				const name = variable.name
+					.replace(/^\w|\b\w/g, (letter) => letter.toUpperCase())
+					.replace(/_+/g, '');
+				fileContents.push(`#define uniform${name} ${arrayName}[${index}]`);
+			});
+		}
 
 		fileContents.push('');
 
