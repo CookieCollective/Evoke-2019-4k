@@ -163,12 +163,11 @@ void mainF1() {
 void mainF2() {
 	vec2 uv = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight);
 	
-	color = (1.0 - colorize()) * (1.0 - 0.5 * halftone((uv - 0.5) / invAspectRatio * 40 * rot(beat / 20), floors((uv.x + uv.y) * 4) / 8));
+	color = (1.0 - colorize()) * (1.0 - 0.5 * halftone((uv - 0.5) / invAspectRatio * 40 * rot(beat / 20), floors(dot(uv, vec2(4))) / 8));
 	
 	vec4 image = texture(firstPassTexture, uv);
-	vec4 frame = texture(firstPassTexture, uv + vec2(0.01));
-	float gray = (image.r + image.g + image.b) / 3.0;
-	float gray2 = (frame.r + frame.g + frame.b) / 3.0;
-	color = mix(color, 0.5 * image, step(0.001, gray));
-	color = mix(color, frame, step(0.001, gray2));
+	color = mix(color, 0.5 * image, smoothstep(0.0, 0.001, image.a));
+	
+	image = texture(firstPassTexture, uv + vec2(0.01));
+	color = mix(color, image, smoothstep(0.0, 0.001, image.a));
 }
