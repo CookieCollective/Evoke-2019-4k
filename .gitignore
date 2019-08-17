@@ -12,3 +12,4 @@ config.local.yml
 
 /stderr
 /stdout
+*.wav

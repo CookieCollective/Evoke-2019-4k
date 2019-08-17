@@ -59,19 +59,36 @@ mat2 rot(float a) {
 	return mat2(c, - s, s, c);
 }
 
+vec2 cs (float a) { return vec2(cos(a),sin(a)); }
+
+vec2 evoke (float t) {
+	return vec2((vec2(cs(3.142))*.114+vec2(cs(t-1.463))*.303+vec2(cs(t*2.+-1.036))*.129+vec2(cs(t*3.-1.298))*.067+vec2(cs(t*4.-1.529))*.075+vec2(cs(t*5.-1.22))*.038+vec2(cs(t*6.-1.022))*.033+vec2(cs(t*7.-2.835))*.021+vec2(cs(t*8.-1.337))*.030+vec2(cs(t*9.-1.765))*.033+vec2(cs(t*10.-1.531))*.026+vec2(cs(t*11.-2.48))*.028+vec2(cs(t*12.-1.821))*.006+vec2(cs(t*13.-2.018))*.017+vec2(cs(t*14.-2.405))*.012).x,(vec2(cs(3.142))*.100+vec2(cs(t+.117))*.074+vec2(cs(t*2.+1.023))*.08+vec2(cs(t*3.+.659))*.06+vec2(cs(t*4.+.123))*.022+vec2(cs(t*5.+.804))*.049+vec2(cs(t*6.-.15))*.029+vec2(cs(t*7.+1.095))*.019+vec2(cs(t*8.+.555))*.022+vec2(cs(t*9.+.169))*.058+vec2(cs(t*10.-.712))*.014+vec2(cs(t*11.+.468))*.013+vec2(cs(t*12.-.193))*.036+vec2(cs(t*13.-1.541))*.005+vec2(cs(t*14.-1.486))*.008).x);
+}
+
+vec2 cookie (float t) {
+	return vec2((vec2(1,0)*.079+vec2(cs(t-1.581))*.231+vec2(cs(t*2.-1.237))*.138+vec2(cs(t*3.-1.122))*.088+vec2(cs(t*4.-.759))*.062+vec2(cs(t*5.-.595))*.049+vec2(cs(t*6.+.560))*.026+vec2(cs(t*7.-2.733))*.026+vec2(cs(t*8.-1.255))*.022+vec2(cs(t*9.-1.442))*.017+vec2(cs(t*10.-2.092))*.029+vec2(cs(t*11.-2.179))*.010+vec2(cs(t*12.-1.91))*.02+vec2(cs(t*13.-2.932))*.006+vec2(cs(t*14.+3.008))*.009).x,(vec2(cs(3.142))*.049+vec2(cs(t+.353))*.058+vec2(cs(t*2.+.537))*.093+vec2(cs(t*3.+.438))*.033+vec2(cs(t*4.+1.024))*.074+vec2(cs(t*5.-.037))*.004+vec2(cs(t*6.+.386))*.032+vec2(cs(t*7.-1.484))*.018+vec2(cs(t*8.-3.057))*.018+vec2(cs(t*9.-.387))*.070+vec2(cs(t*10.-.394))*.028+vec2(cs(t*11.-.027))*.044+vec2(cs(t*12.-2.075))*.024+vec2(cs(t*13.-1.341))*.007+vec2(cs(t*14.-.674))*.011).x);
+}
+
 vec3 curve(float ratio) {
-	float tt = smoothstep(0.0, fallAt+.15, fract(beat));
-	float ttt = floor(beat) * 10.0;
-	ratio *= 4.0 + tt * 9.0;
+	vec3 txt1 = vec3((cookie((1-ratio)*TAU)) * 2, 0);
+	// vec3 txt1 = vec3((evoke((1-ratio)*TAU)) * 2, 0);
+	// txt1.xz *= rot(time);
+	// txt1.yz *= rot(time);
+	txt1.x /= resolutionWidth / resolutionHeight;
+	return txt1;
+	float tt = smoothstep(0, fallAt+.15, fract(beat));
+	float ttt = floor(beat) * 14.246;
+	ratio *= 4 + tt * 9;
 	ratio += ttt;
-	vec3 position = vec3(0.5 + 0.3 * sin(ratio), 0, 0);
+	vec3 position = vec3(.5 + .3 * sin(ratio), 0, 0);
+	position.xz *= rot(ratio * 2);
 	position.yz *= rot(ratio * 1.58);
-	position.xz *= rot(ratio * 2.);
 	position.yx *= rot(ratio * 1.5);
-	position.xz *= rot(tt * 1.5 + ttt);
-	position.yz *= rot(-tt * 2.0 + ttt);
+	// position.xz *= rot(tt * 1.5 + ttt);
+	// position.yz *= rot(-tt * 2.0 + ttt);
 	position.x /= resolutionWidth / resolutionHeight;
 	// position.z += 1.-tt;
+	// position.z += 1.;
 	// position.z /= 2.;
 	return position;
 }
@@ -92,8 +109,8 @@ float floors(float x) {
 
 void mainV0() {
 	vec3 position = aPosition;
-	float ratio = (aUV.x * 0.5 + 0.5) * smoothstep(0.0, 0.1, fract(beat));
-	float size = 0.04;
+	float ratio = (aUV.x * 0.5 + 0.5) * smoothstep(0.0, fallAt, fract(beat));
+	float size = 0.02;
 	float fall = smoothstep(fallAt, 1.0, fract(beat));
 	size *= smoothstep(0.1, 0.0, fall);
 	position = curve(ratio);
@@ -104,14 +121,12 @@ void mainV0() {
 	position.xy /= 1.0 + position.z;
 	gl_Position = vec4(position, 1.0);
 	vColor = cross(normalize(next-position), vec3(0,1,0));
-	// vColor = vec3(aUV*0.5+0.5, 0);
 }
 
 #pragma fragment 0
 
 void mainF0() {
-	// vec2 uv = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight);
-	color = colorize();// * ceil((uv.x+uv.y)*4.0)/4.0;
+	color = colorize();
 }
 
 // PARTICLES
@@ -143,8 +158,7 @@ void mainV1() {
 void mainF1() {
 	float d = length(vUV);
 	if (d > 1.0) discard;
-	// vec2 uv = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight);
-	color = colorize();// * ceil((uv.x+uv.y)*4.0)/4.0;
+	color = colorize();
 }
 
 // POST FX
@@ -153,7 +167,6 @@ void mainF1() {
 
 void mainF2() {
 	float aspectRatio = resolutionWidth / resolutionHeight;
-	float beat = time * 2.08333;// BPS
 	
 	vec2 uvc = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight) - 0.5;
 	uvc.x *= aspectRatio;
