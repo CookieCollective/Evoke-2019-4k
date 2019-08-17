@@ -81,11 +81,14 @@ export async function writeDemoData(context: IContext, demo: IDemoDefinition) {
 
 	const stageVariableRegExp = /\w+ [\w,]+;/g;
 	let vertexSpecificCode = '';
+	let vertexLocationIndex = 0;
 	let fragmentSpecificCode = '';
 
 	if (demo.shader.attributesCode) {
 		forEachMatch(stageVariableRegExp, demo.shader.attributesCode, (match) => {
-			vertexSpecificCode += 'in ' + match[0];
+			vertexSpecificCode +=
+				'layout(location=' + vertexLocationIndex + ')in ' + match[0];
+			++vertexLocationIndex;
 		});
 	}
 
