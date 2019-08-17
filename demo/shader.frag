@@ -59,7 +59,7 @@ vec3 curve(float ratio) {
 	if (time < textAt) {
 		if (time > startAt) {
 			ttt += floor(beat) * 5.246;
-			tt = smoothstep(0, fallAt + 0.15, fract(beat));
+			tt = smoothstep(0.0, fallAt + 0.15, fract(beat));
 			ratio *= (4 + tt * 9);
 			ratio += ttt;
 		} else {
@@ -133,8 +133,8 @@ void mainF0() {
 
 void mainV1() {
 	vec3 position = curve(aPosition.y);
-	float fall = smoothstep(fallAt, 1, fract(beat));
-	float size = (0.03 + 0.015 * sin(aPosition.y * 8654.567)) * smoothstep(1, 0.8, fall) * smoothstep(0, 0.1, fall);
+	float fall = smoothstep(fallAt, 1.0, fract(beat));
+	float size = (0.03 + 0.015 * sin(aPosition.y * 8654.567)) * smoothstep(1.0, 0.8, fall) * smoothstep(0.0, 0.1, fall);
 	size *= smoothstep(startAt - 0.5, startAt + 0.5, time);
 	float a = sin(aPosition.y * 135734.2657) * PI;
 	float r = sin(aPosition.y * 687451.5767) * 1.0 + 0.1;
