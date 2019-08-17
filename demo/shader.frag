@@ -49,128 +49,85 @@ vec3 palette(vec3 a, vec3 b, vec3 c, vec3 d, float t) {
 	return a + b * cos(TAU * (c * t + d));
 }
 
+vec4 colorize () {
+	return vec4(palette(vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.0, 1.0, 2.0) / 3.0, floor(beat / 8.0) * 0.1), 1.);
+}
+
 mat2 rot(float a) {
 	float c = cos(a), s = sin(a);
 	return mat2(c, - s, s, c);
 }
 
 vec3 curve(float ratio) {
+	ratio *= 10.;
 	ratio += time;
 	vec3 position = vec3(0.5 + 0.3 * sin(ratio), 0, 0);
 	position.xz *= rot(ratio);
-	position.yz *= rot(ratio * 0.58);
+	position.yz *= rot(ratio * 1.58);
 	position.yx *= rot(ratio * 1.5);
+	position.xz *= rot(time * .1);
 	position.x /= resolutionWidth/resolutionHeight;
 	return position;
 }
 
 // RIBBONS
+
 #pragma vertex 0
+
 void mainV0() {
 	vec3 position = aPosition;
-	float ratio = aUV.x * 0.5 + position.x * 2.0;
-	float i = position.x;
+	float ratio = aUV.x * 0.5 + .5;
+	float size = .03;
 	position = curve(ratio);
 	vec3 next = curve(ratio + 0.01);
 	vec2 y = normalize(next.xy - position.xy);
 	vec2 x = vec2(y.y, - y.x);
-	// position.z = abs(position.z);
-	position.xy += x * aUV.y * .01;// * (0.01 + 0.01 * position.z);
-	position.xy /= (1.-(position.z));
+	position.xy += size * x * aUV.y * vec2(resolutionHeight/resolutionWidth, 1);
+	position.xy /= 1.+position.z;
 	gl_Position = vec4(position, 1.0);
-	vColor = vec3(aUV.xy * 0.5 + 0.5, 0);
+	vColor = position;
 }
+
 #pragma fragment 0
+
 void mainF0() {
-	// float fade = smoothstep(0.0, 0.5, vColor.x);
-	// fade *= (1.0 - abs(vColor.x * 2.0 - 1.0));
-	color = vec4(vColor,1.);
-	// color = vec4(palette(vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.0, 1.0, 2.0) / 3.0, floor(beat / 8.0) * 0.1), 1.);
+	color = colorize();// * (1.-(vColor.z+1.)/ 2.);
 }
 
 // PARTICLES
+
 #pragma vertex 1
+
 void mainV1() {
-	vec3 position = aPosition;
-	float ratio = aUV.x * 0.5 + position.x * 2.0;
-	float id = position.x;
-	float angle = 2. * 3.1415 * position.x * .01;
-
-	position.xyz = vec3(-10,-10,0);
-	float size = .02;
-
-	float shouldSplash = 0.0;
-	if (shouldSplash > 0.5) {
-		angle += sin(angle *4987.54687);
-		float t = time*.1+sin(angle*1357.57);
-		float splashT = fract(t);
-		float radius = .5 + .9 * sin(angle*6873.2467);
-		size = .1;//+ .01 * sin(angle*927.6871);
-		// size *= smoothstep(.0, .1, splashT) * smoothstep(1.,.9,splashT);
-		float a2 = sin(floor(t) * 1654.546 + angle * 554.4687) * 10.5465;
-		vec2 offset = vec2(cos(a2),sin(a2))*.5;
-		vec2 splash = splashT * vec2(cos(angle), sin(angle)) * radius + offset;
-		splash.y += (sin(splashT*3.1415) - splashT)*.5;
-		position.xy = splash;
-		position.z = abs(sin(angle*8735.5798));
-	}
-
-	float shouldSpace = 0.0;
-	if (shouldSpace > 0.5) {
-		float spaceT = fract(time + sin(angle * 87359.5657) * 1354.5648);
-		float a = angle * 154.4621;
-		float r = angle * .4687;
-		float y = sin(angle *4687.57687)*4.-.5;// - .5;
-		position.xz = (vec2(cos(a),sin(a))) * r;
-		position.y = y;
-		// position.z = abs(position.z);
-		position.z += (1.-spaceT)*10.*sign(position.z);
-		size = 2.;
-		size *= smoothstep(.0, .1, spaceT) * smoothstep(1.,.9,spaceT);
-
-		float shouldRotate = 1.0;
-		if (shouldRotate > 0.5) {
-			position.xy *= rot(abs(position.z) * .1);
-		}
-	}
-
-	float shouldTerrain = 1.0;
-	if (shouldTerrain > 0.5) {
-		size = .03;//+.02*sin(id*13574.5468);
-		position.x = (mod(id,64.)/64.)*2.-1.;
-		position.z = (floor(id/64.)/64.)*2.-1.;
-		position.y = -.5+sin(length(position.xz)*8.-time*PI)*.2;
-		// position.yz *= rot(time);
-		float a = sin(id*8673.468)*PI*2.;
-		float r = .5*sin(id*15.578);
-		// position.xz += vec2(sin(a),cos(a))*r;
-		float lod = length(position)*8.;
-		// position = floor(position*lod)/lod;
-		// po
-		position.z = (position.z+1.)/2.;
-		position.x += .1;
-		// position.xz *= 2.;
-	}
-
-	position.z = abs(position.z);
-	position.xy += size * aUV.xy;// / (1.+abs(position.z));
-	position.xy /= (1.-(position.z));
-	position.x /= 800./600.;
+	vec3 position = curve(0.0);
+	vec2 aspectRatio = vec2(resolutionHeight/resolutionWidth, 1);
+	float fall = fract(time * .1 + aPosition.y);
+	float size = (0.01 + 0.005 * sin(aPosition.y*8654.567)) * smoothstep(1.0, 0.9, fall);
+	float a = sin(aPosition.y * 135734.2657) * TAU;
+	float r = sin(aPosition.y * 687451.5767) * 0.2;
+	vec2 offset = vec2(cos(a),sin(a)+4.) * aspectRatio * r * 4.0;
+	position = curve(-fall);
+	position.y -= 5.0 * fall;
+	position.xy -= offset * fall + vec2(cos(a),sin(a)) * 0.02;
+	position.xy += size * aUV.xy * aspectRatio;
+	position.xy /= 1.+position.z;
 	gl_Position = vec4(position, 1.0);
 	vColor = vec3(aUV.xy * 0.5 + 0.5, 0);
 	vUV = aUV;
 }
+
 #pragma fragment 1
+
 void mainF1() {
 	float d =  length(vUV);
 	if (d > 1.) discard;
-	// float alpha = smoothstep(1., .5, d);
-	// alpha = (1-d)*(.05/d);
-	color = vec4(vColor,1);//clamp(alpha,0.,1.));
+	color = colorize();
 }
 
 // POST FX
+
 #pragma fragment 2
+
 void mainF2() {
 	float aspectRatio = resolutionWidth / resolutionHeight;
 	float beat = time * 2.08333;// BPS
@@ -204,6 +161,14 @@ void mainF2() {
 	// Halftone.
 	#if 0
 	color = mix(color, 1.0 - color, halftone);
+	#endif
+
+	// outline
+	#if 1
+	color = .5*texture(firstPassTexture, uv+vec2(0.01));
+	vec4 frame = texture(firstPassTexture, uv);
+	float gray = (frame.r+frame.g+frame.b)/3.0;
+	color = mix(color, frame, step(0.1, gray));
 	#endif
 	
 	color.a = 1.0;

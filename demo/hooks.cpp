@@ -3,14 +3,14 @@
 #pragma data_seg(".var")
 static GLuint vbo, vao, vboParticles, vaoParticles;
 
-static const constexpr int count = 100;
-static const constexpr int sliceX = 100;
+static const constexpr int count = 1;
+static const constexpr int sliceX = 1000;
 static const constexpr int sliceY = 1;
 static const constexpr int faceX = sliceX + 1;
 static const constexpr int faceY = sliceY + 1;
 static const constexpr int indiceCount = count * ((faceX + 2) * faceY);		// count * line (+2 obfuscated triangle) * row
 static const constexpr int vertexCount = count * (faceX * faceY) * (3 + 2); // count * line * row * (x,y,z + u,v)
-static const constexpr int particleCount = 64*64;
+static const constexpr int particleCount = 1000;
 static const constexpr int indiceParticleCount = particleCount * 4 * 6;
 
 static GLfloat vertices[vertexCount];
@@ -35,7 +35,7 @@ for (int index = 0; index < count; ++index)
 		for (int x = 0; x < faceX; ++x)
 		{
 			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 0] = (float)index;
-			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 1] = (float)index;
+			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 1] = (float)index/(float)count;
 			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 2] = (float)index;
 			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 3 + 0] = ((float)x / (float)sliceX) * 2.f - 1.f;
 			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 3 + 1] = ((float)y / (float)sliceY) * 2.f - 1.f;
@@ -61,7 +61,7 @@ for (int index = 0; index < particleCount; ++index) {
 	for (int y = 0; y < 2; ++y) {
 		for (int x = 0; x < 2; ++x) {
 			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 0] = (float)index;
-			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 1] = (float)index;
+			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 1] = (float)index/(float)particleCount;
 			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 2] = (float)index;
 			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 3 + 0] = ((float)x) * 2.f - 1.f;
 			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 3 + 1] = ((float)y) * 2.f - 1.f;
@@ -139,14 +139,11 @@ checkGLError();
 
 uniformTime = time;
 
-// Pass 0
-
+// Framebuffer
 glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 checkGLError();
-
 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureIds[0], 0);
 checkGLError();
-
 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 checkGLError();
 glDepthMask(GL_TRUE);
@@ -171,10 +168,6 @@ glUseProgram(programs[1]);
 checkGLError();
 glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
 checkGLError();
-// glEnable(GL_BLEND);
-// checkGLError();
-// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-// checkGLError();
 glEnable(GL_CULL_FACE);
 checkGLError();
 glBindVertexArray(vaoParticles);
@@ -182,7 +175,7 @@ checkGLError();
 glDrawElements(GL_TRIANGLE_STRIP, indiceParticleCount, GL_UNSIGNED_INT, indicesParticles);
 checkGLError();
 
-// Pass 2
+// Pass 2 post processing
 glBindFramebuffer(GL_FRAMEBUFFER, 0);
 checkGLError();
 glUseProgram(programs[2]);
@@ -195,7 +188,6 @@ glActiveTexture(GL_TEXTURE0 + 0);
 checkGLError();
 glBindTexture(GL_TEXTURE_2D, textureIds[0]);
 checkGLError();
-
 glUniform1i(1, 0);
 checkGLError();
 glClear(GL_COLOR_BUFFER_BIT);
