@@ -14,7 +14,7 @@ static const constexpr int particleCount = 1000;
 static const constexpr int indiceParticleCount = particleCount * 4 * 6;
 
 static GLfloat vertices[vertexCount];
-static GLfloat verticesParticles[particleCount*6*4];
+static GLfloat verticesParticles[particleCount * 6 * 4];
 static int indices[indiceCount];
 static int indicesParticles[indiceParticleCount];
 
@@ -35,7 +35,7 @@ for (int index = 0; index < count; ++index)
 		for (int x = 0; x < faceX; ++x)
 		{
 			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 0] = (float)index;
-			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 1] = (float)index/(float)count;
+			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 1] = (float)index / (float)count;
 			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 2] = (float)index;
 			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 3 + 0] = ((float)x / (float)sliceX) * 2.f - 1.f;
 			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 3 + 1] = ((float)y / (float)sliceY) * 2.f - 1.f;
@@ -56,21 +56,26 @@ for (int index = 0; index < count; ++index)
 
 // particles
 i = 0;
-for (int index = 0; index < particleCount; ++index) {
+for (int index = 0; index < particleCount; ++index)
+{
 	int xx = 0;
-	for (int y = 0; y < 2; ++y) {
-		for (int x = 0; x < 2; ++x) {
+	for (int y = 0; y < 2; ++y)
+	{
+		for (int x = 0; x < 2; ++x)
+		{
 			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 0] = (float)index;
-			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 1] = (float)index/(float)particleCount;
+			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 1] = (float)index / (float)particleCount;
 			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 2] = (float)index;
 			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 3 + 0] = ((float)x) * 2.f - 1.f;
 			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 3 + 1] = ((float)y) * 2.f - 1.f;
 			xx++;
 		}
 	}
-	for (int r = 0; r < 2 - 1; ++r) {
+	for (int r = 0; r < 2 - 1; ++r)
+	{
 		indicesParticles[i++] = index * (2 * 2) + r * 2;
-		for (int c = 0; c < 2; ++c) {
+		for (int c = 0; c < 2; ++c)
+		{
 			indicesParticles[i++] = index * (2 * 2) + r * 2 + c;
 			indicesParticles[i++] = index * (2 * 2) + (r + 1) * 2 + c;
 		}
@@ -130,6 +135,10 @@ for (i = 0; i < textureCount; i++)
 	checkGLError();
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//checkGLError();
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	checkGLError();
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	checkGLError();
 }
 
 glGenFramebuffers(1, &fbo);

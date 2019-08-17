@@ -49,8 +49,8 @@ vec3 palette(vec3 a, vec3 b, vec3 c, vec3 d, float t) {
 	return a + b * cos(TAU * (c * t + d));
 }
 
-vec4 colorize () {
-	return vec4(palette(vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.0, 1.0, 2.0) / 3.0, floor(beat / 8.0) * 0.1), 1.);
+vec4 colorize() {
+	return vec4(palette(vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.0, 1.0, 2.0) / 3.0, floor(beat / 8.0) * 0.1), 1.0);
 }
 
 mat2 rot(float a) {
@@ -59,15 +59,21 @@ mat2 rot(float a) {
 }
 
 vec3 curve(float ratio) {
-	ratio *= 10.;
+	ratio *= 10.0;
 	ratio += time;
 	vec3 position = vec3(0.5 + 0.3 * sin(ratio), 0, 0);
 	position.xz *= rot(ratio);
 	position.yz *= rot(ratio * 4.58);
 	position.yx *= rot(ratio * 1.5);
-	position.xz *= rot(time * .1);
-	position.x /= resolutionWidth/resolutionHeight;
+	position.xz *= rot(time * 0.1);
+	position.x /= resolutionWidth / resolutionHeight;
 	return position;
+}
+
+float halftone(vec2 st, float dir) {
+	vec2 fst = fract(st), ist = floor(st), wp = ist + step(0.5, fst), bp = ist + vec2(0.5);
+	float wl = length(st - wp), bl = length(st - bp);
+	return step(dir, bl / (bl + wl));
 }
 
 // RIBBONS
@@ -76,14 +82,14 @@ vec3 curve(float ratio) {
 
 void mainV0() {
 	vec3 position = aPosition;
-	float ratio = aUV.x * 0.5 + .5;
-	float size = .03;
+	float ratio = aUV.x * 0.5 + 0.5;
+	float size = 0.03;
 	position = curve(ratio);
 	vec3 next = curve(ratio + 0.01);
 	vec2 y = normalize(next.xy - position.xy);
 	vec2 x = vec2(y.y, - y.x);
-	position.xy += size * x * aUV.y * vec2(resolutionHeight/resolutionWidth, 1);
-	position.xy /= 1.+position.z;
+	position.xy += size * x * aUV.y * vec2(resolutionHeight / resolutionWidth, 1);
+	position.xy /= 1.0 + position.z;
 	gl_Position = vec4(position, 1.0);
 	// vColor = cross(normalize(next-position), vec3(0,1,0));
 	vColor = vec3(aUV*0.5+0.5, 0);
@@ -105,17 +111,17 @@ void mainF0() {
 
 void mainV1() {
 	vec3 position = curve(0.0);
-	vec2 aspectRatio = vec2(resolutionHeight/resolutionWidth, 1);
-	float fall = fract(time * .1 + aPosition.y);
-	float size = (0.01 + 0.005 * sin(aPosition.y*8654.567)) * smoothstep(1.0, 0.9, fall);
+	vec2 aspectRatio = vec2(resolutionHeight / resolutionWidth, 1);
+	float fall = fract(time * 0.1 + aPosition.y);
+	float size = (0.01 + 0.005 * sin(aPosition.y * 8654.567)) * smoothstep(1.0, 0.9, fall);
 	float a = sin(aPosition.y * 135734.2657) * TAU;
 	float r = sin(aPosition.y * 687451.5767) * 0.2;
-	vec2 offset = vec2(cos(a),sin(a)+4.) * aspectRatio * r * 4.0;
+	vec2 offset = vec2(cos(a), sin(a) + 4.0) * aspectRatio * r * 4.0;
 	position = curve(-fall);
 	position.y -= 5.0 * fall;
-	position.xy -= offset * fall + vec2(cos(a),sin(a)) * 0.02;
+	position.xy -= offset * fall + vec2(cos(a), sin(a)) * 0.02;
 	position.xy += size * aUV.xy * aspectRatio;
-	position.xy /= 1.+position.z;
+	position.xy /= 1.0 + position.z;
 	gl_Position = vec4(position, 1.0);
 	vColor = vec3(aUV.xy * 0.5 + 0.5, 0);
 	vUV = aUV;
@@ -124,8 +130,8 @@ void mainV1() {
 #pragma fragment 1
 
 void mainF1() {
-	float d =  length(vUV);
-	if (d > 1.) discard;
+	float d = length(vUV);
+	if (d > 1.0)discard;
 	color = colorize();
 }
 
@@ -140,12 +146,7 @@ void mainF2() {
 	vec2 uvc = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight) - 0.5;
 	uvc.x *= aspectRatio;
 	
-	vec2 st = uvc * 100.0;
-	st *= rot(PI/10.);
-	vec2 fst = fract(st), ist = floor(st);
-	vec2 wp = ist + step(0.5, fst), bp = ist + vec2(0.5);
-	float wl = length(st - wp), bl = length(st - bp);
-	float halftone = step(.1, bl / (bl + wl) - 0.5);
+	float ht = halftone(uvc * 100.0 * rot(PI / 10.0), 0.1);
 	
 	// A mod kaleidoscope.
 	#if 0
@@ -164,27 +165,28 @@ void mainF2() {
 	#else
 	color = texture(firstPassTexture, uv);
 	#endif
-
+	
 	float lod = 4.0;
-	color = 1.-colorize()*floor((uv.x+uv.y)*lod)/lod;
+	vec4 bgc = colorize();
+	color = mix(bgc, 1.0 - bgc, halftone(uvc * 40.0 * rot(beat / 120.0), floor((uv.x + uv.y) * lod) / lod / 2.0));
 	
 	// Halftone.
 	#if 0
-	// color = mix(color, 1.0 - color, halftone);
-	color *= halftone;
+	// color = mix(color, 1.0 - color, ht);
+	color *= ht;
 	#endif
-
+	
 	// outline
 	#if 1
 	// color = vec4(0);
 	// for (float index = 1.0; index <= 3.0; ++index) {
-	// 	float ratio = index/3.0;
+		// 	float ratio = index/3.0;
 		// color = ratio*texture(firstPassTexture, uv+vec2(0.01)*ratio);
 		// float a = ratio * TAU;
 		// vec2 offset = vec2(cos(a),sin(a)) * 0.1 * (1.-ratio);
-		vec4 frame = texture(firstPassTexture, uv+vec2(0.01));
-		float gray = (frame.r+frame.g+frame.b)/3.0;
-		color = mix(0.5*color, frame, step(0.1, gray));
+		vec4 frame = texture(firstPassTexture, uv + vec2(0.01));
+		float gray = (frame.r + frame.g + frame.b) / 3.0;
+		color = mix(0.5 * color, frame, step(0.1, gray));
 	// }
 	#endif
 	

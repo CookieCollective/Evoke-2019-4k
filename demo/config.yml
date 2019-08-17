@@ -8,6 +8,7 @@ demo:
   gl:
     constants:
       - GL_ARRAY_BUFFER
+      - GL_CLAMP_TO_EDGE
       - GL_COLOR_ATTACHMENT0
       - GL_FRAMEBUFFER
       - GL_RGBA32F
