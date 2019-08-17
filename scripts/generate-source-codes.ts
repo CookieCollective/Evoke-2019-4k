@@ -15,7 +15,7 @@ export async function writeDemoData(context: IContext, demo: IDemoDefinition) {
 			.replace(/"/g, '\\"');
 	}
 
-	const fileContents = ['#pragma once', ''];
+	const fileContents = ['#pragma once', '#pragma data_seg(".demo_data")', ''];
 
 	if (context.config.get('debug')) {
 		fileContents.push('#define DEBUG', '');
@@ -230,6 +230,7 @@ export async function writeDemoData(context: IContext, demo: IDemoDefinition) {
 export async function writeDemoGl(context: IContext) {
 	const fileContents = [
 		'#pragma once',
+		'#pragma code_seg(".demo_gl")',
 		'',
 		'#include <GL/gl.h>',
 		'',

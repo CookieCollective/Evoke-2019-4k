@@ -131,7 +131,21 @@ export class ShaderMinifierShaderMinifier implements IShaderMinifier {
 			await spawn(this.config.get('tools:mono'), args);
 		}
 
-		const contents = (await readFile(output, 'utf8')).replace(/\r/g, '');
+		const contents = (await readFile(output, 'utf8'))
+			.replace(/\r/g, '')
+			.replace(
+				/([\d\.]+)\*([\d\.]+)/gm,
+				(_substring, lhs: string, rhs: string) => {
+					let value = (parseFloat(lhs) * parseFloat(rhs)).toString();
+					if (
+						(lhs.indexOf('.') !== -1 || rhs.indexOf('.') !== -1) &&
+						value.indexOf('.') === -1
+					) {
+						value += '.';
+					}
+					return value;
+				}
+			);
 
 		const parts = contents.split('#pragma separator');
 
