@@ -18,8 +18,7 @@ static GLfloat verticesParticles[particleCount * 6 * 4];
 static int indices[indiceCount];
 static int indicesParticles[indiceParticleCount];
 
-static const constexpr int textureCount = 1;
-static GLuint textureIds[textureCount];
+static GLuint firstPassTextureId;
 
 static unsigned int fbo;
 
@@ -123,23 +122,19 @@ checkGLError();
 glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
 checkGLError();
 
-glGenTextures(textureCount, textureIds);
+glGenTextures(1, &firstPassTextureId);
 checkGLError();
-for (i = 0; i < textureCount; i++)
-{
-	glBindTexture(GL_TEXTURE_2D, textureIds[i]);
-	checkGLError();
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolutionWidth, resolutionHeight, 0, GL_RGBA, GL_FLOAT, NULL);
-	checkGLError();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	checkGLError();
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//checkGLError();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	checkGLError();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	checkGLError();
-}
+glBindTexture(GL_TEXTURE_2D, firstPassTextureId);
+checkGLError();
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolutionWidth, resolutionHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+checkGLError();
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+checkGLError();
+//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//checkGLError();
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+checkGLError();
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 glGenFramebuffers(1, &fbo);
 checkGLError();
@@ -151,7 +146,7 @@ uniformTime = time;
 // Framebuffer
 glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 checkGLError();
-glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureIds[0], 0);
+glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, firstPassTextureId, 0);
 checkGLError();
 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 checkGLError();
@@ -191,14 +186,14 @@ glUseProgram(programs[2]);
 checkGLError();
 glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
 checkGLError();
-glDisable(GL_CULL_FACE);
+//glDisable(GL_CULL_FACE);
 glDisable(GL_DEPTH_TEST);
 glActiveTexture(GL_TEXTURE0 + 0);
 checkGLError();
-glBindTexture(GL_TEXTURE_2D, textureIds[0]);
-checkGLError();
-glUniform1i(1, 0);
-checkGLError();
+//glBindTexture(GL_TEXTURE_2D, firstPassTextureId);
+//checkGLError();
+//glUniform1i(3, 0);
+//checkGLError();
 glClear(GL_COLOR_BUFFER_BIT);
 checkGLError();
 glRects(-1, -1, 1, 1);
