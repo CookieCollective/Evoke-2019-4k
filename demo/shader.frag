@@ -62,7 +62,7 @@ mat2 rot(float a) {
 vec3 curve(float ratio) {
 	float tt = smoothstep(0.0, fallAt+.15, fract(beat));
 	float ttt = floor(beat) * 10.0;
-	ratio *= 1.0 + tt * 9.0;
+	ratio *= 4.0 + tt * 9.0;
 	ratio += ttt;
 	vec3 position = vec3(0.5 + 0.3 * sin(ratio), 0, 0);
 	position.yz *= rot(ratio * 1.58);
@@ -71,6 +71,8 @@ vec3 curve(float ratio) {
 	position.xz *= rot(tt * 1.5 + ttt);
 	position.yz *= rot(-tt * 2.0 + ttt);
 	position.x /= resolutionWidth / resolutionHeight;
+	// position.z += 1.-tt;
+	// position.z /= 2.;
 	return position;
 }
 
@@ -120,11 +122,11 @@ void mainV1() {
 	vec3 position = curve(aPosition.y);
 	vec2 aspectRatio = vec2(resolutionHeight / resolutionWidth, 1);
 	float fall = smoothstep(fallAt, 1.0, fract(beat));
-	float size = (0.04 + 0.02 * sin(aPosition.y * 8654.567)) * smoothstep(1.0, 0.6, fall) * smoothstep(0.0, 0.2, fall);
-	float a = sin(aPosition.y * 135734.2657) * TAU;
-	float r = sin(aPosition.y * 687451.5767) * 2.0 + 1.0;
+	float size = (0.03 + 0.015 * sin(aPosition.y * 8654.567)) * smoothstep(1.0, 0.8, fall) * smoothstep(0.0, 0.1, fall);
+	float a = sin(aPosition.y * 135734.2657) * PI;
+	float r = sin(aPosition.y * 687451.5767) * 1.0 + 0.1;
 	vec2 offset = vec2(cos(a), sin(a)) * aspectRatio * r;
-	offset.y -= sin(fall * PI) * 0.5;
+	offset.y -= sin(fall * PI) * 0.5 - fall * .5;
 	// offset += vec2(cos(a), sin(a)) * 0.02;
 	// position = curve(-fall);
 	// position.y -= 7.0 * fall;
