@@ -32,13 +32,12 @@ vec4 color;
 #pragma common
 
 // TODO move
-const float TAU = 6.28;
 float beat = time * 0.78;// BPS
 
 vec2 invAspectRatio = vec2(resolutionHeight / resolutionWidth, 1);
 
 vec4 colorize() {
-	return vec4(vec3(0.5) + vec3(0.5) * cos(TAU * (floor(beat) * 0.1 * vec3(1.0) + vec3(0.0, 1.0, 2.0) / 3.0)), 1.0);
+	return vec4(vec3(0.5) + vec3(0.5) * cos(2.0 * PI * (floor(beat) * 0.1 * vec3(1.0) + vec3(0.0, 1.0, 2.0) / 3.0)), 1.0);
 }
 
 mat2 rot(float a) {
@@ -82,9 +81,9 @@ vec3 curve(float ratio) {
 	
 	if (time > textAt) {
 		float round = mod(floor(max(0.0, time - textAt) * 0.78), 2.0);
-		if (round < 0.5)position = vec3((cookie((1 - ratio) * TAU)) * 2, 0);
-		else position = vec3((evoke((1 - ratio) * TAU)) * 2, 0);
-		// vec3 txt1 = vec3((evoke((1-ratio)*TAU)) * 2, 0);
+		if (round < 0.5)position = vec3((cookie((1 - ratio) * 2.0 * PI)) * 2, 0);
+		else position = vec3((evoke((1 - ratio) * 2.0 * PI)) * 2, 0);
+		// vec3 txt1 = vec3((evoke((1-ratio)*2.*PI)) * 2, 0);
 		// txt1.xz *= rot(time);
 		// txt1.yz *= rot(time);
 	}
