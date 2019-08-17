@@ -85,13 +85,18 @@ void mainV0() {
 	position.xy += size * x * aUV.y * vec2(resolutionHeight/resolutionWidth, 1);
 	position.xy /= 1.+position.z;
 	gl_Position = vec4(position, 1.0);
-	vColor = position;
+	// vColor = cross(normalize(next-position), vec3(0,1,0));
+	vColor = vec3(aUV*0.5+0.5, 0);
 }
 
 #pragma fragment 0
 
 void mainF0() {
-	color = colorize();// * (1.-(vColor.z+1.)/ 2.);
+	// color = vec4(1);
+	// color = vec4(abs(dot(normalize(vColor),vec3(0,0,1))));// * (1.-(vColor.z+1.)/ 2.);
+	// color.a = 1.0;
+	float lod = 8.0;
+	color = colorize() * ceil(vColor.x*lod)/lod;// * (1.-(vColor.z+1.)/ 2.);
 }
 
 // PARTICLES
