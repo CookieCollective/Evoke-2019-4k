@@ -1,10 +1,11 @@
-# Title
+# PiaggioNonTroppo
 
 Authors:
 
-- **Alice**: code.
-- **Bob**: graphics.
+- **glafouk**: music.
+- **koltes**: code.
+- **ponk**: graphics.
 
-Released at _Release party year_ in competition _compo_.
+Released at Evoke party 2019 in competition 4k.
 
 Baked with [Cookie Collective's 4k Demo Oven](https://github.com/CookieCollective/4k-Demo-Oven).
