@@ -59,11 +59,11 @@ mat2 rot(float a) {
 }
 
 vec3 curve(float ratio) {
-	ratio *= 10.0;
-	ratio += time;
+	ratio *= 1.0 + fract(time) * 9.0;
+	ratio += time + floor(time) * 10.0;
 	vec3 position = vec3(0.5 + 0.3 * sin(ratio), 0, 0);
-	position.xz *= rot(ratio);
-	position.yz *= rot(ratio * 4.58);
+	position.yz *= rot(ratio * 1.58);
+	position.xz *= rot(ratio * 2.);
 	position.yx *= rot(ratio * 1.5);
 	position.xz *= rot(time * 0.1);
 	position.x /= resolutionWidth / resolutionHeight;
@@ -83,7 +83,7 @@ float halftone(vec2 st, float dir) {
 void mainV0() {
 	vec3 position = aPosition;
 	float ratio = aUV.x * 0.5 + 0.5;
-	float size = 0.03;
+	float size = 0.01;
 	position = curve(ratio);
 	vec3 next = curve(ratio + 0.01);
 	vec2 y = normalize(next.xy - position.xy);
@@ -91,18 +91,15 @@ void mainV0() {
 	position.xy += size * x * aUV.y * vec2(resolutionHeight / resolutionWidth, 1);
 	position.xy /= 1.0 + position.z;
 	gl_Position = vec4(position, 1.0);
-	// vColor = cross(normalize(next-position), vec3(0,1,0));
-	vColor = vec3(aUV*0.5+0.5, 0);
+	vColor = cross(normalize(next-position), vec3(0,1,0));
+	// vColor = vec3(aUV*0.5+0.5, 0);
 }
 
 #pragma fragment 0
 
 void mainF0() {
-	// color = vec4(1);
-	// color = vec4(abs(dot(normalize(vColor),vec3(0,0,1))));// * (1.-(vColor.z+1.)/ 2.);
-	// color.a = 1.0;
-	float lod = 8.0;
-	color = colorize() * ceil(vColor.x*lod)/lod;// * (1.-(vColor.z+1.)/ 2.);
+	// vec2 uv = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight);
+	color = colorize();// * ceil((uv.x+uv.y)*4.0)/4.0;
 }
 
 // PARTICLES
@@ -118,7 +115,7 @@ void mainV1() {
 	float r = sin(aPosition.y * 687451.5767) * 0.2;
 	vec2 offset = vec2(cos(a), sin(a) + 4.0) * aspectRatio * r * 4.0;
 	position = curve(-fall);
-	position.y -= 5.0 * fall;
+	position.y -= 7.0 * fall;
 	position.xy -= offset * fall + vec2(cos(a), sin(a)) * 0.02;
 	position.xy += size * aUV.xy * aspectRatio;
 	position.xy /= 1.0 + position.z;
@@ -132,7 +129,8 @@ void mainV1() {
 void mainF1() {
 	float d = length(vUV);
 	if (d > 1.0)discard;
-	color = colorize();
+	// vec2 uv = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight);
+	color = colorize();// * ceil((uv.x+uv.y)*4.0)/4.0;
 }
 
 // POST FX
@@ -168,7 +166,7 @@ void mainF2() {
 	
 	float lod = 4.0;
 	vec4 bgc = colorize();
-	color = mix(bgc, 1.0 - bgc, halftone(uvc * 40.0 * rot(beat / 120.0), floor((uv.x + uv.y) * lod) / lod / 2.0));
+	color = mix(1.-bgc, .5*(1.-bgc), halftone(uvc * 40.0 * rot(beat / 120.0), floor((uv.x + uv.y) * lod) / lod / 2.0));
 	
 	// Halftone.
 	#if 0
@@ -184,9 +182,13 @@ void mainF2() {
 		// color = ratio*texture(firstPassTexture, uv+vec2(0.01)*ratio);
 		// float a = ratio * TAU;
 		// vec2 offset = vec2(cos(a),sin(a)) * 0.1 * (1.-ratio);
+		vec4 image = texture(firstPassTexture, uv);
 		vec4 frame = texture(firstPassTexture, uv + vec2(0.01));
-		float gray = (frame.r + frame.g + frame.b) / 3.0;
-		color = mix(0.5 * color, frame, step(0.1, gray));
+		float gray = (image.r + image.g + image.b) / 3.0;
+		float gray2 = (frame.r + frame.g + frame.b) / 3.0;
+		// color = mix(color, mix(0.5 * image, frame, step(0.001, gray2)), step(0.001, gray));
+		color = mix(color, 0.5 * image, step(0.001, gray));
+		color = mix(color, frame, step(0.001, gray2));
 	// }
 	#endif
 	
