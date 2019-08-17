@@ -10,8 +10,8 @@ const float PI = 3.14;
 const float fallAt = 0.5;
 const float startAt = 20.6;
 const float continueAt = 41.8;
-const float moreAt = 61.4;
-const float textAt = 82;
+const float moreAt = 51.4;
+const float textAt = 61;
 
 vec4 _gl_Position;
 #define gl_Position _gl_Position
@@ -45,8 +45,6 @@ mat2 rot(float a) {
 	float c = cos(a), s = sin(a);
 	return mat2(c, - s, s, c);
 }
-
-vec2 cs(float a) { return vec2(cos(a), sin(a)); }
 
 vec2 evoke(float t) {
 	return vec2(cos(3.142) * 0.114 + cos(t - 1.463) * 0.303 + cos(t * 2.0 - 1.036) * 0.129 + cos(t * 3.0 - 1.298) * 0.067 + cos(t * 4.0 - 1.529) * 0.075 + cos(t * 5.0 - 1.22) * 0.038 + cos(t * 6.0 - 1.022) * 0.033 + cos(t * 7.0 - 2.835) * 0.021 + cos(t * 8.0 - 1.337) * 0.030 + cos(t * 9.0 - 1.765) * 0.033 + cos(t * 10.0 - 1.531) * 0.026 + cos(t * 11.0 - 2.48) * 0.028 + cos(t * 12.0 - 1.821) * 0.006 + cos(t * 13.0 - 2.018) * 0.017 + cos(t * 14.0 - 2.405) * 0.012, cos(3.142) * 0.100 + cos(t + 0.117) * 0.074 + cos(t * 2.0 + 1.023) * 0.08 + cos(t * 3.0 + 0.659) * 0.06 + cos(t * 4.0 + 0.123) * 0.022 + cos(t * 5.0 + 0.804) * 0.049 + cos(t * 6.0 - 0.15) * 0.029 + cos(t * 7.0 + 1.095) * 0.019 + cos(t * 8.0 + 0.555) * 0.022 + cos(t * 9.0 + 0.169) * 0.058 + cos(t * 10.0 - 0.712) * 0.014 + cos(t * 11.0 + 0.468) * 0.013 + cos(t * 12.0 - 0.193) * 0.036 + cos(t * 13.0 - 1.541) * 0.005 + cos(t * 14.0 - 1.486) * 0.008);
