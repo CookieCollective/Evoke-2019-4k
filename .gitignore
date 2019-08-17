@@ -9,3 +9,6 @@ config.local.yml
 .settings/
 .cproject
 .project
+
+/stderr
+/stdout
