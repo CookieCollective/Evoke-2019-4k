@@ -7,6 +7,7 @@ uniform float resolutionHeight;
 
 uniform sampler2D firstPassTexture;
 const float PI = 3.14;
+const float fallAt = 0.5;
 
 vec4 _gl_Position;
 #define gl_Position _gl_Position
@@ -29,7 +30,7 @@ vec4 color;
 
 // TODO move
 const float TAU = 6.28;
-float beat = time * 2.08333;// BPS
+float beat = time * 0.78;// BPS
 
 float md(float p, float m) {
 	return mod(p - m*0.5, m) - m*0.5;
@@ -50,7 +51,7 @@ vec3 palette(vec3 a, vec3 b, vec3 c, vec3 d, float t) {
 }
 
 vec4 colorize() {
-	return vec4(palette(vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.0, 1.0, 2.0) / 3.0, floor(beat / 8.0) * 0.1), 1.0);
+	return vec4(palette(vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.0, 1.0, 2.0) / 3.0, floor(beat) * 0.1), 1.0);
 }
 
 mat2 rot(float a) {
@@ -59,13 +60,16 @@ mat2 rot(float a) {
 }
 
 vec3 curve(float ratio) {
-	ratio *= 1.0 + fract(time) * 9.0;
-	ratio += time + floor(time) * 10.0;
+	float tt = smoothstep(0.0, fallAt+.15, fract(beat));
+	float ttt = floor(beat) * 10.0;
+	ratio *= 1.0 + tt * 9.0;
+	ratio += ttt;
 	vec3 position = vec3(0.5 + 0.3 * sin(ratio), 0, 0);
 	position.yz *= rot(ratio * 1.58);
 	position.xz *= rot(ratio * 2.);
 	position.yx *= rot(ratio * 1.5);
-	position.xz *= rot(time * 0.1);
+	position.xz *= rot(tt * 1.5 + ttt);
+	position.yz *= rot(-tt * 2.0 + ttt);
 	position.x /= resolutionWidth / resolutionHeight;
 	return position;
 }
@@ -86,8 +90,10 @@ float floors(float x) {
 
 void mainV0() {
 	vec3 position = aPosition;
-	float ratio = aUV.x * 0.5 + 0.5;
-	float size = 0.01;
+	float ratio = (aUV.x * 0.5 + 0.5) * smoothstep(0.0, 0.1, fract(beat));
+	float size = 0.04;
+	float fall = smoothstep(fallAt, 1.0, fract(beat));
+	size *= smoothstep(0.1, 0.0, fall);
 	position = curve(ratio);
 	vec3 next = curve(ratio + 0.01);
 	vec2 y = normalize(next.xy - position.xy);
@@ -111,16 +117,18 @@ void mainF0() {
 #pragma vertex 1
 
 void mainV1() {
-	vec3 position = curve(0.0);
+	vec3 position = curve(aPosition.y);
 	vec2 aspectRatio = vec2(resolutionHeight / resolutionWidth, 1);
-	float fall = fract(time * 0.1 + aPosition.y);
-	float size = (0.01 + 0.005 * sin(aPosition.y * 8654.567)) * smoothstep(1.0, 0.9, fall);
+	float fall = smoothstep(fallAt, 1.0, fract(beat));
+	float size = (0.04 + 0.02 * sin(aPosition.y * 8654.567)) * smoothstep(1.0, 0.6, fall) * smoothstep(0.0, 0.2, fall);
 	float a = sin(aPosition.y * 135734.2657) * TAU;
-	float r = sin(aPosition.y * 687451.5767) * 0.2;
-	vec2 offset = vec2(cos(a), sin(a) + 4.0) * aspectRatio * r * 4.0;
-	position = curve(-fall);
-	position.y -= 7.0 * fall;
-	position.xy -= offset * fall + vec2(cos(a), sin(a)) * 0.02;
+	float r = sin(aPosition.y * 687451.5767) * 2.0 + 1.0;
+	vec2 offset = vec2(cos(a), sin(a)) * aspectRatio * r;
+	offset.y -= sin(fall * PI) * 0.5;
+	// offset += vec2(cos(a), sin(a)) * 0.02;
+	// position = curve(-fall);
+	// position.y -= 7.0 * fall;
+	position.xy -= offset * fall;
 	position.xy += size * aUV.xy * aspectRatio;
 	position.xy /= 1.0 + position.z;
 	gl_Position = vec4(position, 1.0);
@@ -132,7 +140,7 @@ void mainV1() {
 
 void mainF1() {
 	float d = length(vUV);
-	if (d > 1.0)discard;
+	if (d > 1.0) discard;
 	// vec2 uv = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight);
 	color = colorize();// * ceil((uv.x+uv.y)*4.0)/4.0;
 }
@@ -170,7 +178,7 @@ void mainF2() {
 	
 	float lod = 4.0;
 	vec4 bgc = colorize();
-	color = mix(1.-bgc, .5*(1.-bgc), halftone(uvc * 40.0 * rot(beat / 120.0), floors((uv.x + uv.y) * lod) / lod / 2.0));
+	color = mix(1.-bgc, .5*(1.-bgc), halftone(uvc * 40.0 * rot(beat / 20.0), floors((uv.x + uv.y) * lod) / lod / 2.0));
 	
 	// Halftone.
 	#if 0

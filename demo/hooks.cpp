@@ -10,7 +10,7 @@ static const constexpr int faceX = sliceX + 1;
 static const constexpr int faceY = sliceY + 1;
 static const constexpr int indiceCount = count * ((faceX + 2) * faceY);		// count * line (+2 obfuscated triangle) * row
 static const constexpr int vertexCount = count * (faceX * faceY) * (3 + 2); // count * line * row * (x,y,z + u,v)
-static const constexpr int particleCount = 1000;
+static const constexpr int particleCount = 200;
 static const constexpr int indiceParticleCount = particleCount * 4 * 6;
 
 static GLfloat vertices[vertexCount];
