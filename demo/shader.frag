@@ -107,7 +107,7 @@ float floors(float x) {
 
 void mainV0() {
 	vec3 position = aPosition;
-	float ratio = aUV.x * 0.5 + 0.5;
+	float ratio = aUV.x;
 	if (time > startAt)ratio *= smoothstep(0.0, fallAt, fract(beat));
 	float size = 0.02;
 	float fall = smoothstep(fallAt, 1.0, fract(beat));
@@ -116,7 +116,7 @@ void mainV0() {
 	vec3 next = curve(ratio + 0.01);
 	vec2 y = normalize(next.xy - position.xy);
 	vec2 x = vec2(y.y, - y.x);
-	position.xy += size * x * aUV.y * invAspectRatio;
+	position.xy += size * x * (aUV.y * 2.0 - 1.0) * invAspectRatio;
 	position.xy /= 1.0 + position.z;
 	gl_Position = vec4(position, 1.0);
 }
@@ -140,7 +140,7 @@ void mainV1() {
 	float r = sin(aPosition.y * 687451.5767) * 1.0 + 0.1;
 	vec2 offset = vec2(cos(a), sin(a)) * r * invAspectRatio;
 	offset.y -= sin(fall * PI) * 0.5 - fall * 0.5;
-	position.xy += size * aUV.xy * invAspectRatio - offset * fall;
+	position.xy += size * aUV * invAspectRatio - offset * fall;
 	position.xy /= 1 + position.z;
 	gl_Position = vec4(position, 1);
 	vUV = aUV;

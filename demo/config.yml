@@ -27,3 +27,4 @@ demo:
       - glNamedBufferSubData
       - glUniform1i
       - glVertexAttribPointer
+  loadingBlackScreen: true

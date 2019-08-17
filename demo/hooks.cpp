@@ -25,60 +25,59 @@ static unsigned int fbo;
 #pragma hook initialize
 
 // ribbons
-int i = 0;
+auto pVertices = vertices;
+auto pIndices = indices;
 for (int index = 0; index < count; ++index)
 {
-	int xx = 0;
 	for (int y = 0; y < faceY; ++y)
 	{
 		for (int x = 0; x < faceX; ++x)
 		{
-			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 0] = (float)index;
-			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 1] = (float)index / (float)count;
-			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 2] = (float)index;
-			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 3 + 0] = ((float)x / (float)sliceX) * 2.f - 1.f;
-			vertices[index * (faceX * faceY) * (3 + 2) + xx * (3 + 2) + 3 + 1] = ((float)y / (float)sliceY) * 2.f - 1.f;
-			xx++;
+			*(pVertices++) = (float)index;
+			*(pVertices++) = (float)index / (float)count;
+			*(pVertices++) = (float)index;
+			*(pVertices++) = (float)x / (float)sliceX;
+			*(pVertices++) = (float)y / (float)sliceY;
 		}
 	}
+
 	for (int r = 0; r < faceY - 1; ++r)
 	{
-		indices[i++] = index * (faceX * faceY) + r * faceX;
+		*(pIndices++) = index * (faceX * faceY) + r * faceX;
 		for (int c = 0; c < faceX; ++c)
 		{
-			indices[i++] = index * (faceX * faceY) + r * faceX + c;
-			indices[i++] = index * (faceX * faceY) + (r + 1) * faceX + c;
+			*(pIndices++) = index * (faceX * faceY) + r * faceX + c;
+			*(pIndices++) = index * (faceX * faceY) + (r + 1) * faceX + c;
 		}
-		indices[i++] = index * (faceX * faceY) + (r + 1) * faceX + (faceX - 1);
+		*(pIndices++) = index * (faceX * faceY) + (r + 1) * faceX + (faceX - 1);
 	}
 }
 
 // particles
-i = 0;
+auto pVerticesParticle = verticesParticles;
+auto pIndicesParticle = indicesParticles;
 for (int index = 0; index < particleCount; ++index)
 {
-	int xx = 0;
 	for (int y = 0; y < 2; ++y)
 	{
 		for (int x = 0; x < 2; ++x)
 		{
-			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 0] = (float)index;
-			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 1] = (float)index / (float)particleCount;
-			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 2] = (float)index;
-			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 3 + 0] = ((float)x) * 2.f - 1.f;
-			verticesParticles[index * (2 * 2) * (3 + 2) + xx * (3 + 2) + 3 + 1] = ((float)y) * 2.f - 1.f;
-			xx++;
+			*(pVerticesParticle++) = (float)index;
+			*(pVerticesParticle++) = (float)index / (float)particleCount;
+			*(pVerticesParticle++) = (float)index;
+			*(pVerticesParticle++) = ((float)x) * 2.f - 1.f;
+			*(pVerticesParticle++) = ((float)y) * 2.f - 1.f;
 		}
 	}
 	for (int r = 0; r < 2 - 1; ++r)
 	{
-		indicesParticles[i++] = index * (2 * 2) + r * 2;
+		*(pIndicesParticle++) = index * (2 * 2) + r * 2;
 		for (int c = 0; c < 2; ++c)
 		{
-			indicesParticles[i++] = index * (2 * 2) + r * 2 + c;
-			indicesParticles[i++] = index * (2 * 2) + (r + 1) * 2 + c;
+			*(pIndicesParticle++) = index * (2 * 2) + r * 2 + c;
+			*(pIndicesParticle++) = index * (2 * 2) + (r + 1) * 2 + c;
 		}
-		indicesParticles[i++] = index * (2 * 2) + (r + 1) * 2 + (2 - 1);
+		*(pIndicesParticle++) = index * (2 * 2) + (r + 1) * 2 + (2 - 1);
 	}
 }
 
