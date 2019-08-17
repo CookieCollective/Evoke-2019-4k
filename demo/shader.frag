@@ -35,6 +35,8 @@ vec4 color;
 const float TAU = 6.28;
 float beat = time * 0.78;// BPS
 
+vec2 invAspectRatio = vec2(resolutionHeight / resolutionWidth, 1);
+
 vec4 colorize() {
 	return vec4(vec3(0.5) + vec3(0.5) * cos(TAU * (floor(beat) * 0.1 * vec3(1.0) + vec3(0.0, 1.0, 2.0) / 3.0)), 1.0);
 }
@@ -89,8 +91,7 @@ vec3 curve(float ratio) {
 		// txt1.yz *= rot(time);
 	}
 	
-	position.x /= resolutionWidth / resolutionHeight;
-	return position;
+	return position * invAspectRatio.xyy;
 }
 
 float halftone(vec2 st, float dir) {
@@ -118,7 +119,7 @@ void mainV0() {
 	vec3 next = curve(ratio + 0.01);
 	vec2 y = normalize(next.xy - position.xy);
 	vec2 x = vec2(y.y, - y.x);
-	position.xy += size * x * aUV.y * vec2(resolutionHeight / resolutionWidth, 1);
+	position.xy += size * x * aUV.y * invAspectRatio;
 	position.xy /= 1.0 + position.z;
 	gl_Position = vec4(position, 1.0);
 }
@@ -135,16 +136,15 @@ void mainF0() {
 
 void mainV1() {
 	vec3 position = curve(aPosition.y);
-	vec2 aspectRatio = vec2(resolutionHeight / resolutionWidth, 1);
 	float fall = smoothstep(fallAt, 1, fract(beat));
 	float size = (0.03 + 0.015 * sin(aPosition.y * 8654.567)) * smoothstep(1, 0.8, fall) * smoothstep(0, 0.1, fall);
 	size *= smoothstep(startAt - 0.5, startAt + 0.5, time);
 	float a = sin(aPosition.y * 135734.2657) * PI;
 	float r = sin(aPosition.y * 687451.5767) * 1.0 + 0.1;
-	vec2 offset = vec2(cos(a), sin(a)) * aspectRatio * r;
+	vec2 offset = vec2(cos(a), sin(a)) * r * invAspectRatio;
 	offset.y -= sin(fall * PI) * 0.5 - fall * 0.5;
 	position.xy -= offset * fall;
-	position.xy += size * aUV.xy * aspectRatio;
+	position.xy += size * aUV.xy * invAspectRatio;
 	position.xy /= 1 + position.z;
 	gl_Position = vec4(position, 1);
 	vUV = aUV;
@@ -163,14 +163,9 @@ void mainF1() {
 #pragma fragment 2
 
 void mainF2() {
-	float aspectRatio = resolutionWidth / resolutionHeight;
+	vec2 uv = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight);
 	
-	vec2 uvc = gl_FragCoord.xy / vec2(resolutionWidth, resolutionHeight) - 0.5;
-	uvc.x *= aspectRatio;
-	vec2 uv = uvc / vec2(aspectRatio, 1) + 0.5;
-	
-	vec4 bgc = colorize();
-	color = mix(1 - bgc, 0.5 * (1 - bgc), halftone(uvc * 40 * rot(beat / 20), floors((uv.x + uv.y) * 4) / 4 / 2));
+	color = (1.0 - colorize()) * (1.0 - 0.5 * halftone((uv - 0.5) / invAspectRatio * 40 * rot(beat / 20), floors((uv.x + uv.y) * 4) / 8));
 	
 	vec4 image = texture(firstPassTexture, uv);
 	vec4 frame = texture(firstPassTexture, uv + vec2(0.01));
