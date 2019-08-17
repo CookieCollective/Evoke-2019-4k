@@ -3,7 +3,7 @@
 # 2589 - 869 = 1720
 demo:
   audio-synthesizer:
-    tool: realtime
+    tool: oidos
   name: PiaggioNonTroppo
   gl:
     constants:
