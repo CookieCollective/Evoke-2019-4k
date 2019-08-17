@@ -134,10 +134,9 @@ void mainF0() {
 void mainV1() {
 	vec3 position = curve(aPosition.y);
 	float fall = smoothstep(fallAt, 1.0, fract(beat));
-	float size = (0.03 + 0.015 * sin(aPosition.y * 8654.567)) * smoothstep(1.0, 0.8, fall) * smoothstep(0.0, 0.1, fall);
-	size *= smoothstep(startAt - 0.5, startAt + 0.5, time);
+	float size = (0.03 + 0.015 * sin(aPosition.y * 8654.567)) * (1.0 - fall) * smoothstep(0.0, 0.1, fall) * smoothstep(startAt - 0.5, startAt + 0.5, time);
 	float a = sin(aPosition.y * 135734.2657) * PI;
-	float r = sin(aPosition.y * 687451.5767) * 1.0 + 0.1;
+	float r = sin(aPosition.y * 687451.5767) + 0.1;
 	vec2 offset = vec2(cos(a), sin(a)) * r * invAspectRatio;
 	offset.y -= sin(fall * PI) * 0.5 - fall * 0.5;
 	position.xy += size * aUV * invAspectRatio - offset * fall;
