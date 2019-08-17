@@ -76,6 +76,10 @@ float halftone(vec2 st, float dir) {
 	return step(dir, bl / (bl + wl));
 }
 
+float floors(float x) {
+	return floor(x) + smoothstep(0.9, 1.0, fract(x));
+}
+
 // RIBBONS
 
 #pragma vertex 0
@@ -163,7 +167,7 @@ void mainF2() {
 	
 	float lod = 4.0;
 	vec4 bgc = colorize();
-	color = mix(bgc, 1.0 - bgc, halftone(uvc * 40.0 * rot(beat / 120.0), floor((uv.x + uv.y) * lod) / lod / 2.0));
+	color = mix(bgc, 1.0 - bgc, halftone(uvc * 40.0 * rot(beat / 120.0), floors((uv.x + uv.y) * lod) / lod / 2.0));
 	
 	// Halftone.
 	#if 0
