@@ -151,8 +151,10 @@ void mainV1() {
 #pragma fragment 1
 
 void mainF1() {
-	float d = length(vUV);
-	if (d > 1.0)discard;
+	if (length(vUV) > 1.0) {
+		discard;
+	}
+	
 	color = colorize();
 }
 
