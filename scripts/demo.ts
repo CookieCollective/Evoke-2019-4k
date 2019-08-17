@@ -151,12 +151,24 @@ export async function provideDemo(context: IContext): Promise<IDemoDefinition> {
 				};
 			}
 
-			const index = shader.uniformArrays[variable.type].variables.length;
 			shader.uniformArrays[variable.type].variables.push(variable);
+		}
+	});
+
+	variables.forEach((variable) => {
+		if (!variable.active) {
+			return;
+		}
+
+		if (variable.kind === 'uniform') {
+			const uniformArray = shader.uniformArrays[variable.type];
+			const index = uniformArray.variables.indexOf(variable);
 
 			const usageRegExp = new RegExp(`\\b${variable.name}\\b`, 'g');
 			const newWriting =
-				shader.uniformArrays[variable.type].name + '[' + index + ']';
+				uniformArray.variables.length === 1
+					? uniformArray.name
+					: uniformArray.name + '[' + index + ']';
 
 			shader.commonCode = shader.commonCode.replace(usageRegExp, newWriting);
 
@@ -205,8 +217,10 @@ export async function provideDemo(context: IContext): Promise<IDemoDefinition> {
 		Object.keys(shader.uniformArrays)
 			.map((type) => {
 				const uniformArray = shader.uniformArrays[type];
-				return `uniform ${type} ${uniformArray.minifiedName ||
-					uniformArray.name}[${uniformArray.variables.length}];`;
+				return uniformArray.variables.length === 1
+					? `uniform ${type} ${uniformArray.minifiedName || uniformArray.name};`
+					: `uniform ${type} ${uniformArray.minifiedName ||
+							uniformArray.name}[${uniformArray.variables.length}];`;
 			})
 			.concat(
 				Object.keys(globalsByTypes).map((type) => {

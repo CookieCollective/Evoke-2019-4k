@@ -34,8 +34,11 @@ export class ShaderMinifierShaderMinifier implements IShaderMinifier {
 		const shaderLines = ['// Uniform arrays', ''];
 
 		Object.keys(definition.uniformArrays).forEach((type) => {
+			const uniformArray = definition.uniformArrays[type];
 			shaderLines.push(
-				`uniform ${type} ${definition.uniformArrays[type].name}[${definition.uniformArrays[type].variables.length}];`
+				uniformArray.variables.length === 1
+					? `uniform ${type} ${uniformArray.name};`
+					: `uniform ${type} ${uniformArray.name}[${uniformArray.variables.length}];`
 			);
 		});
 
@@ -173,7 +176,7 @@ export class ShaderMinifierShaderMinifier implements IShaderMinifier {
 		}
 
 		const uniformsString = takePart();
-		const uniformsRegExp = /uniform \w+ (\w+)\[\d+\];/g;
+		const uniformsRegExp = /uniform \w+ (\w+)(?:\[\d+\])?;/g;
 		Object.keys(definition.uniformArrays).forEach((type) => {
 			const uniformMatch = uniformsRegExp.exec(uniformsString);
 			if (!uniformMatch) {
