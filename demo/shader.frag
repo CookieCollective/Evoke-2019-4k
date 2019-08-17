@@ -141,8 +141,7 @@ void mainV1() {
 	float r = sin(aPosition.y * 687451.5767) * 1.0 + 0.1;
 	vec2 offset = vec2(cos(a), sin(a)) * r * invAspectRatio;
 	offset.y -= sin(fall * PI) * 0.5 - fall * 0.5;
-	position.xy -= offset * fall;
-	position.xy += size * aUV.xy * invAspectRatio;
+	position.xy += size * aUV.xy * invAspectRatio - offset * fall;
 	position.xy /= 1 + position.z;
 	gl_Position = vec4(position, 1);
 	vUV = aUV;
