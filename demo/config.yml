@@ -28,3 +28,5 @@ demo:
       - glUniform1i
       - glVertexAttribPointer
   loadingBlackScreen: true
+capture:
+  audioFilename: music.wav

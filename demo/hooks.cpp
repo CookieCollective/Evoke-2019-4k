@@ -157,7 +157,7 @@ checkGLError();
 // Pass 0 ribbons
 glUseProgram(programs[0]);
 checkGLError();
-glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
+glUniform1fv(0, FLOAT_UNIFORM_COUNT, &floatUniforms);
 checkGLError();
 glDisable(GL_CULL_FACE);
 checkGLError();
@@ -169,7 +169,7 @@ checkGLError();
 // Pass 1 particles
 glUseProgram(programs[1]);
 checkGLError();
-glUniform1fv(0, FLOAT_UNIFORM_COUNT, floatUniforms);
+glUniform1fv(0, FLOAT_UNIFORM_COUNT, &floatUniforms);
 checkGLError();
 glEnable(GL_CULL_FACE);
 checkGLError();
@@ -183,7 +183,7 @@ glBindFramebuffer(GL_FRAMEBUFFER, 0);
 checkGLError();
 glUseProgram(programs[2]);
 checkGLError();
-glUniform1fv(1, FLOAT_UNIFORM_COUNT, floatUniforms);
+glUniform1fv(1, FLOAT_UNIFORM_COUNT, &floatUniforms);
 checkGLError();
 //glDisable(GL_CULL_FACE);
 glDisable(GL_DEPTH_TEST);
